@@ -1,3 +1,5 @@
+
+
 async function loadPosts() {
   let loadUrl =
     "https://wordpress-1471720-5962383.cloudwaysapps.com/wp-json/custom/v1/blog/";
@@ -68,3 +70,86 @@ async function setupPagination(postPerPage, currentPage) {
 showPosts(currentPage);
 
 setupPagination(postPerPage, currentPage);
+
+async function loadCategory() {
+  let categoryUrl =
+    "https://wordpress-1471720-5962383.cloudwaysapps.com/wp-json/custom/v1/categories";
+
+  const categoryResponse = await fetch(categoryUrl);
+
+  const categoryData = await categoryResponse.json();
+
+  return categoryData;
+}
+
+loadCategory();
+
+
+
+async function loadPostsByName(categoryName) {
+
+  const categoryUrlResponse = await fetch(`https://wordpress-1471720-5962383.cloudwaysapps.com/wp-json/custom/v1/blog/?category=${categoryName}`);
+
+  const NameData = await categoryUrlResponse.json();
+
+  showFilteredPosts(NameData.posts);
+
+  setupPagination(NameData.posts);
+}
+
+async function showFilteredPosts(posts) {
+  
+
+  let displayData = "";
+
+  posts.forEach((element) => {
+    displayData += `
+    
+    <div style="display: flex; flex-direction: column;  border-radius: 8px; padding: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+    <img style="width:300px" src="${element.featured_image}" alt="">
+    <div style="font-weight: bold; font-size: large;">${element.title}</div>
+      <div>${element.date}</div>
+      </div>
+      
+    `;
+  });
+
+  document.querySelector(".js-blog-display").innerHTML = displayData;
+
+}
+
+setupPagination();
+
+async function displayCategories() {
+  const categoryDisplay = await loadCategory();
+
+  console.log(categoryDisplay);
+
+  let displayCategory = "";
+
+  categoryDisplay.forEach((category) => {
+    displayCategory += `
+    <div style="cursor: pointer;" class="js-blog-name">${category.name}</div>
+    `;
+  });
+
+  document.querySelector(".js-dropdown-menu").innerHTML = displayCategory;
+
+  const blogName =  document.querySelectorAll('.js-blog-name');
+
+  blogName.forEach((name) => {
+    name.addEventListener('click', () => {
+
+      const categoryName = name.textContent
+
+      console.log(categoryName);
+
+     loadPostsByName(categoryName);
+      
+
+  });
+
+  })
+}
+
+displayCategories();
