@@ -1,5 +1,3 @@
-
-
 async function loadPosts() {
   let loadUrl =
     "https://wordpress-1471720-5962383.cloudwaysapps.com/wp-json/custom/v1/blog/";
@@ -16,8 +14,6 @@ let currentPage = 1;
 
 async function showPosts(page, currentPage) {
   const data = await loadPosts();
-
-  console.log(data);
 
   const start = (page - 1) * postPerPage;
   const end = start + postPerPage;
@@ -42,12 +38,7 @@ async function showPosts(page, currentPage) {
 
 async function setupPagination(postPerPage, currentPage) {
   const data = await loadPosts();
-
-  console.log(data);
-
   const totalPages = Math.ceil(data.posts.length / postPerPage);
-
-  console.log(totalPages);
 
   let buttonHtml = "";
 
@@ -71,35 +62,20 @@ showPosts(currentPage);
 
 setupPagination(postPerPage, currentPage);
 
-async function loadCategory() {
-  let categoryUrl =
-    "https://wordpress-1471720-5962383.cloudwaysapps.com/wp-json/custom/v1/categories";
-
-  const categoryResponse = await fetch(categoryUrl);
-
-  const categoryData = await categoryResponse.json();
-
-  return categoryData;
-}
-
-loadCategory();
-
-
 
 async function loadPostsByName(categoryName) {
+  const categoryUrlResponse = await fetch(
+    `https://wordpress-1471720-5962383.cloudwaysapps.com/wp-json/custom/v1/blog/?category=${categoryName}`
+  );
 
-  const categoryUrlResponse = await fetch(`https://wordpress-1471720-5962383.cloudwaysapps.com/wp-json/custom/v1/blog/?category=${categoryName}`);
+  const nameData = await categoryUrlResponse.json();
 
-  const NameData = await categoryUrlResponse.json();
+  showFilteredPosts(nameData.posts);
 
-  showFilteredPosts(NameData.posts);
-
-  setupPagination(NameData.posts);
+  setupPagination(nameData.posts);
 }
 
 async function showFilteredPosts(posts) {
-  
-
   let displayData = "";
 
   posts.forEach((element) => {
@@ -115,15 +91,25 @@ async function showFilteredPosts(posts) {
   });
 
   document.querySelector(".js-blog-display").innerHTML = displayData;
-
 }
 
 setupPagination();
 
+async function loadCategory() {
+  let categoryUrl =
+    "https://wordpress-1471720-5962383.cloudwaysapps.com/wp-json/custom/v1/categories";
+
+  const categoryResponse = await fetch(categoryUrl);
+
+  const categoryData = await categoryResponse.json();
+
+  return categoryData;
+}
+
+loadCategory();
+
 async function displayCategories() {
   const categoryDisplay = await loadCategory();
-
-  console.log(categoryDisplay);
 
   let displayCategory = "";
 
@@ -135,21 +121,38 @@ async function displayCategories() {
 
   document.querySelector(".js-dropdown-menu").innerHTML = displayCategory;
 
-  const blogName =  document.querySelectorAll('.js-blog-name');
+  const blogName = document.querySelectorAll(".js-blog-name");
 
   blogName.forEach((name) => {
-    name.addEventListener('click', () => {
+    name.addEventListener("click", () => {
+      const categoryName = name.textContent;
 
-      const categoryName = name.textContent
-
-      console.log(categoryName);
-
-     loadPostsByName(categoryName);
-      
-
+      loadPostsByName(categoryName);
+    });
   });
-
-  })
 }
 
 displayCategories();
+
+async function searchButton() {
+  document.querySelector(".js-search-button").addEventListener("click", async(e) => {
+  const searchText = document
+    .querySelector(".js-search-text")
+    .value.toLowerCase();
+
+ if (!searchText.trim()) {
+  showPosts(1);
+  return;
+ }
+
+ const loadData = await loadPosts();
+
+ const filtered = loadData.posts.filter(post => post.title.toLowerCase().includes(searchText) || post.id.toString().includes(searchText) );
+
+ showFilteredPosts(filtered);
+
+});
+
+}
+
+searchButton();
