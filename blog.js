@@ -93,7 +93,8 @@ async function showFilteredPosts(posts) {
   document.querySelector(".js-blog-display").innerHTML = displayData;
 }
 
-setupPagination();
+setupPagination(postPerPage, currentPage);
+
 
 async function loadCategory() {
   let categoryUrl =
